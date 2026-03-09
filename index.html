@@ -10,25 +10,28 @@
 
 <div id="login-overlay" class="login-screen">
     <div class="login-card">
-        <h2>🛡️ 反詐騙挑戰賽</h2>
-        <p>請輸入您的姓名開始挑戰</p>
+        <h2>🛡️ 廉政挑戰賽</h2>
+        <p>請輸入您的姓名或分機開始挑戰</p>
         <input type="text" id="player-name" placeholder="您的名字..." maxlength="10">
         <button class="action-btn" onclick="startGameWithLogin()">進入遊戲</button>
+        <p style="font-size: 11px; color: #888; margin-top: 15px;">文山區公所政風室自製</p>
     </div>
 </div>
 
 <div id="game-container">
     <div id="header">
-        <div class="question-box">🛡️ 情境：<span id="target-answer">載入中...</span></div>
+        <div class="question-box">
+            <div>🛡️ 題目：<br><span id="target-answer">載入中...</span></div>
+        </div>
         <div class="header-right">
             <div id="user-display">挑戰者：未登錄</div>
-            <div class="score-box">得分：<span id="score">0</span> / 200</div>
+            <div class="score-box">得分：<span id="score">0</span> / 100</div>
             <button id="manual-reset-btn" onclick="confirmReset()">🔄 重新開始</button>
         </div>
     </div>
     
     <div id="status-bar">
-        <div class="timer-box">⏱️ 剩餘時間：<span id="timer">30</span>s</div>
+        <div class="timer-box">⏱️ 剩餘時間：<span id="timer">60</span>s</div>
         <div id="instruction">🎮 任務：對準中心！(⬅️ ➡️ 移動，空白鍵下抓)</div>
     </div>
 
@@ -49,11 +52,14 @@
 
             <div id="win-overlay" class="overlay">
                 <h2>🏆 恭喜通關！</h2>
-                <p><span id="winner-name-display" style="color:#2ecc71; font-weight:bold;"></span> 已成為反詐騙小高手！</p>
-                <p style="font-size: 18px;">獲得滿分 200 分！</p>
+                <p><span id="winner-name-display" style="color:#2ecc71; font-weight:bold;"></span> 已成為廉政小高手！</p>
+                <p style="font-size: 18px;">獲得滿分 100 分！</p>
                 <button class="action-btn" onclick="restartGame()" style="background: #f1c40f; color: #333;">再玩一次</button>
             </div>
         </div>
+    </div>
+    <div style="text-align: right; font-size: 13px; color: #bdc3c7; margin-top: 10px; font-weight: bold; letter-spacing: 1px;">
+        文山區公所政風室自製
     </div>
 </div>
 
