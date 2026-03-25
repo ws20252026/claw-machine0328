@@ -1,190 +1,80 @@
-const itemsArea = document.getElementById('items-area');
-const claw = document.getElementById('claw-body');
-const targetText = document.getElementById('target-answer');
-const scoreText = document.getElementById('score');
-const timerText = document.getElementById('timer');
-const gameOverOverlay = document.getElementById('game-over-overlay');
-const winOverlay = document.getElementById('win-overlay');
-const finalScoreText = document.getElementById('final-score');
-
-let playerName = "挑戰者"; 
-let clawX = 225;
-let score = 0;
-let timeLeft = 600; 
-let isDropping = false;
-let isGameOver = false;
-let gameTimer = null;
-let currentCorrectAnswer = "";
-let availableQuestions = [];
-
-const antiFraudPool = [
-    { q: "消費者服務專線的電話是？", options: ["📞 1950", "📞 110", "📞 119", "📞 123"], a: "📞 1950" },
-    { q: "以下哪些是常見的詐騙手法？", options: ["💌 網路交友", "📈 假投資", "✅ 以上皆是", "🎁 領點數"], a: "✅ 以上皆是" },
-    { q: "收到自稱檢察官電話說要監管帳戶？", options: ["☎️ 撥打 165", "💰 匯款給他", "🏦 操作 ATM"], a: "☎️ 撥打 165" },
-    { q: "賄選檢舉專線為", options: ["📞 0800-024-099#4", "📞 113", "📞 2882-5252", "📞 119"], a: "📞 0800-024-099#4" },
-    { q: "公務員赴大陸，事後返臺上班多久內應填寫「返臺通報表」？", options: ["一星期內", "不用填(ﾟ∀。)", "一年後", "一年內"], a: "一星期內" },
-    { q: "透明晶質獎是哪個機關辦理的？", options: ["法務部廉政署", "數發部", "文山區公所", "體育部"], a: "法務部廉政署" },
-    { q: "透明晶質獎舉辦目的是？", options: ["推動廉能治理", "激勵行政團隊", "樹立標竿學習", "以上皆是"], a: "以上皆是" },
-    { q: "依臺北市政府公務員廉政倫理規範，公務員受贈財物市價在????金額以下，為例外？", options: ["新臺幣200元", "新臺幣1000元", "辛巴威幣500000元", "新臺幣2000元"], a: "新臺幣200元" },
-    { q: "電腦開機密碼時常忘記，所以最好都不要換比較好？", options: ["對，我就懶(^y^)", "定期更換，公務機密人人有責", "看我心情(´ー`)"], a: "定期更換，公務機密人人有責" },
-    { q: "公益揭弊者保護法中所稱的「揭弊者」是指？", options: ["政府機關（構）之人", "國營事業之人", "受政府控制之事業團體之人", "以上皆是"], a: "以上皆是" }
-];
-
-/* --- 控制功能 --- */
-
-function moveLeft() {
-    if (!isDropping && !isGameOver) {
-        if (clawX > 30) { clawX -= 30; claw.style.left = clawX + 'px'; }
-    }
+body { 
+    margin: 0; background-color: #1a2a3a; display: flex; justify-content: center; 
+    align-items: center; min-height: 100vh; font-family: sans-serif; overflow: hidden; 
 }
 
-function moveRight() {
-    if (!isDropping && !isGameOver) {
-        const maxRight = itemsArea.clientWidth - 60;
-        if (clawX < maxRight) { clawX += 30; claw.style.left = clawX + 'px'; }
-    }
+#game-container { 
+    text-align: center; width: 95%; max-width: 500px; background-color: #2c3e50; 
+    padding: 12px; border-radius: 15px; color: white; position: relative; box-sizing: border-box;
 }
 
-function dropClaw() {
-    if (isDropping || isGameOver) return;
-    isDropping = true;
-    const items = document.querySelectorAll('.item');
-    const maxDropDepth = 280; 
-    let caughtItem = null;
-    let highestY = 999;
-
-    items.forEach(item => {
-        const itemCenterX = item.offsetLeft + (item.offsetWidth / 2);
-        if (Math.abs(clawX + 25 - itemCenterX) < 45) {
-            if (item.offsetTop < highestY) { highestY = item.offsetTop; caughtItem = item; }
-        }
-    });
-
-    const stopDepth = caughtItem ? (highestY - 5) : maxDropDepth;
-    claw.style.top = stopDepth + "px";
-
-    setTimeout(() => {
-        if (caughtItem) {
-            caughtItem.style.transition = "top 0.7s";
-            caughtItem.style.bottom = "auto";
-            caughtItem.style.top = (stopDepth + 30) + "px";
-            setTimeout(() => {
-                caughtItem.style.top = "-150px";
-                if (caughtItem.innerText === currentCorrectAnswer) {
-                    score += 10;
-                    scoreText.innerText = score;
-                    if (score >= 100) winGame();
-                    else { timeLeft += 5; timerText.innerText = timeLeft; setTimeout(initGame, 500); }
-                } else {
-                    alert("❌ 答錯了！");
-                    caughtItem.remove();
-                }
-            }, 100);
-        }
-        claw.style.top = "0px";
-        setTimeout(() => isDropping = false, 700);
-    }, 750);
+#header { display: flex; justify-content: space-between; margin-bottom: 8px; gap: 8px; }
+.question-box { 
+    background: #f1c40f; color: #333; padding: 8px; border-radius: 10px; 
+    font-weight: bold; flex: 1; font-size: 14px; min-height: 55px; 
+    display: flex; align-items: center; justify-content: center;
 }
 
-// 修正：純粹打亂位置，不換題目
-function shufflePositions() {
-    if (isDropping || isGameOver) return;
-    const items = document.querySelectorAll('.item');
-    items.forEach(item => {
-        item.style.transition = "all 0.5s ease"; // 增加滑動效果
-        item.style.left = Math.random() * (itemsArea.clientWidth - 110) + 'px';
-        item.style.bottom = (Math.random() * 120 + 20) + 'px';
-    });
+.header-right { display: flex; flex-direction: column; gap: 5px; min-width: 100px; }
+.score-box { background: #3498db; padding: 5px; border-radius: 5px; font-size: 14px; border: 1px solid rgba(255,255,255,0.3); }
+#user-display { font-size: 11px; color: #f1c40f; font-weight: bold; }
+
+#manual-reset-btn {
+    background: white; color: #333; border: none; border-radius: 5px; 
+    padding: 3px; font-size: 12px; cursor: pointer; font-weight: bold; touch-action: manipulation;
 }
 
-/* --- 遊戲核心流程 --- */
+#instruction-bar { margin: 10px 0 5px 0; font-size: 13px; color: #bdc3c7; font-weight: bold; }
+.status-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 0 5px; }
 
-window.onload = function() {
-    document.getElementById('start-btn').onclick = startGameWithoutInput;
-    document.getElementById('btn-left').onclick = moveLeft;
-    document.getElementById('btn-right').onclick = moveRight;
-    document.getElementById('btn-drop').onclick = dropClaw;
-
-    document.addEventListener('keydown', function(e) {
-        if (isGameOver) return;
-        if (e.code === 'ArrowLeft') moveLeft();
-        if (e.code === 'ArrowRight') moveRight();
-        if (e.code === 'Space') { e.preventDefault(); dropClaw(); }
-    });
-};
-
-function startGameWithoutInput() {
-    document.getElementById('user-display').innerText = "挑戰者：" + playerName;
-    document.getElementById('login-overlay').style.display = 'none';
-    restartGame();
+#shuffle-btn {
+    background: #f39c12; color: white; border: 2px solid white; border-radius: 20px; 
+    padding: 6px 12px; font-size: 12px; font-weight: bold; cursor: pointer; 
+    box-shadow: 0 3px #d35400; touch-action: manipulation;
 }
 
-function restartGame() {
-    score = 0; timeLeft = 600; isGameOver = false; isDropping = false; clawX = 225;
-    availableQuestions = [...antiFraudPool];
-    scoreText.innerText = "0";
-    timerText.innerText = "600";
-    claw.style.left = "225px"; claw.style.top = "0px";
-    gameOverOverlay.style.display = 'none';
-    winOverlay.style.display = 'none';
-    initGame();
-    startTimer();
+.timer-display { background: #e74c3c; padding: 5px 12px; border-radius: 8px; font-size: 13px; font-weight: bold; }
+
+/* 機器本體 */
+#machine-wrapper { 
+    width: 100%; height: 340px; background: #ecf0f1; position: relative; 
+    border: 6px solid #333; border-radius: 10px; 
+    overflow: hidden !important; 
+    contain: paint; /* 強化剪裁渲染 */
 }
 
-function startTimer() {
-    clearInterval(gameTimer);
-    gameTimer = setInterval(() => {
-        if (!isGameOver) {
-            timeLeft--;
-            timerText.innerText = timeLeft;
-            if (timeLeft <= 0) endGame();
-        }
-    }, 1000);
+#claw-body { 
+    width: 50px; position: absolute; top: 0; left: 225px; z-index: 20; 
+    transition: top 0.7s cubic-bezier(0.1, 0, 0.3, 1); 
 }
 
-function initGame() {
-    itemsArea.innerHTML = '';
-    if (availableQuestions.length === 0) availableQuestions = [...antiFraudPool];
-    const randomIndex = Math.floor(Math.random() * availableQuestions.length);
-    const currentLevel = availableQuestions[randomIndex];
-    availableQuestions.splice(randomIndex, 1); 
-    targetText.innerText = currentLevel.q;
-    currentCorrectAnswer = currentLevel.a;
+/* 移除原本的 .line CSS */
 
-    currentLevel.options.forEach((text) => {
-        const item = document.createElement('div');
-        item.className = 'item';
-        item.innerText = text;
-        itemsArea.appendChild(item);
-        // 初始化隨機位置
-        item.style.left = Math.random() * (itemsArea.clientWidth - 110) + 'px';
-        item.style.bottom = (Math.random() * 120 + 20) + 'px';
-    });
+.hand { width: 34px; height: 20px; background: #95a5a6; border-radius: 5px 5px 0 0; margin: 0 auto; position: relative; }
+.hand::before, .hand::after { content: ''; position: absolute; bottom: -22px; width: 10px; height: 24px; border: 3px solid #7f8c8d; border-top: none; }
+.hand::before { left: -6px; border-radius: 0 0 0 10px; transform: rotate(-15deg); border-right: none; }
+.hand::after { right: -6px; border-radius: 0 0 10px 0; transform: rotate(15deg); border-left: none; }
+
+.item {
+    position: absolute; padding: 6px 10px; background: white; color: #333; 
+    border: 2px solid #3498db; border-radius: 15px; font-size: 13px; 
+    font-weight: bold; z-index: 5; max-width: 120px; text-align: center;
+    box-shadow: 2px 3px 6px rgba(0,0,0,0.1); user-select: none; -webkit-user-select: none;
 }
 
-function endGame() { 
-    isGameOver = true; clearInterval(gameTimer); 
-    finalScoreText.innerText = score;
-    gameOverOverlay.style.display = 'flex'; 
+#mobile-controls { display: flex; justify-content: center; gap: 10px; margin-top: 15px; }
+.ctrl-btn { 
+    flex: 1; max-width: 120px; padding: 16px 0; font-size: 18px; font-weight: bold; 
+    color: white; border: none; border-radius: 12px; cursor: pointer; 
+    background-color: #6c757d; box-shadow: 0 4px 0 rgba(0,0,0,0.3); 
+    touch-action: manipulation; -webkit-tap-highlight-color: transparent; 
 }
+#btn-drop { background-color: #e67e22; }
+.ctrl-btn:active { transform: translateY(4px); box-shadow: none; }
 
-function winGame() { 
-    isGameOver = true; clearInterval(gameTimer); 
-    winOverlay.style.display = 'flex'; 
-}
+.overlay, .login-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; border-radius: 10px; }
+.login-card { background: white; padding: 20px; border-radius: 15px; color: #333; width: 260px; text-align: center; }
 
-function confirmReset() { if (confirm("確定重新開始？")) restartGame(); }
-
-(function() {
-    document.addEventListener('touchstart', function(event) {
-        if (event.touches.length > 1) event.preventDefault();
-    }, { passive: false });
-    let lastTouchEnd = 0;
-    document.addEventListener('touchend', function(event) {
-        const now = (new Date()).getTime();
-        if (now - lastTouchEnd <= 300) {
-            if (event.target.tagName !== 'BUTTON') event.preventDefault();
-        }
-        lastTouchEnd = now;
-    }, false);
-})();
+#player-name { font-size: 16px; padding: 8px; width: 80%; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px; }
+.action-btn { padding: 10px 25px; background: #2ecc71; color: white; border: none; border-radius: 25px; font-weight: bold; cursor: pointer; margin-top: 10px; touch-action: manipulation; }
+.footer-sign { text-align: right; font-size: 12px; color: #bdc3c7; margin-top: 10px; font-weight: bold; }
