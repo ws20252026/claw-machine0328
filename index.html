@@ -2,24 +2,26 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="format-detection" content="telephone=no">
-
     <title>廉政大夾擊，文山第一名！</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div id="login-overlay" class="login-screen">
-    <div class="login-card">
-        <h2>🛡️ 廉政大夾擊</h2>
-        <p>請輸入您的「姓名或分機」開始挑戰</p>
-        <input type="text" id="player-name" placeholder="您的名字..." maxlength="10">
-        <button class="action-btn" id="start-btn">進入遊戲</button>
+    <div class="login-card" style="width: 320px; padding: 25px;">
+        <h2 style="color: #2c3e50; margin-bottom: 15px;">🛡️ 廉政大夾擊<br>遊戲說明</h2>
+        <div style="text-align: left; font-size: 14px; line-height: 1.6; color: #444; margin-bottom: 20px; border-top: 1px solid #eee; padding-top: 15px;">
+            <p>1. <b>挑戰時間：</b>共 600 秒，請盡情體驗。</p>
+            <p>2. <b>操作方式：</b>使用左右按鈕移動吊爪，按下「抓取」夾取球球。</p>
+            <p>3. <b>識詐任務：</b>每顆球代表一個情境，請夾取正確答案。</p>
+            <p>4. <b>小撇步：</b>若發現選項位置太偏、夾不到，請點擊下方的<b>「📦 選項夾不到？點我重新排版」</b>按鈕。</p>
+        </div>
+        <input type="hidden" id="player-name" value="現場民眾">
+        <button class="action-btn" id="start-btn" style="width: 100%; font-size: 18px;">我準備好了，開始！</button>
         <p style="font-size: 11px; color: #888; margin-top: 15px;">文山區公所政風室自製</p>
     </div>
 </div>
@@ -30,21 +32,20 @@
             <div>🛡️ 題目：<br><span id="target-answer">載入中...</span></div>
         </div>
         <div class="header-right">
-            <div id="user-display">挑戰者：未登錄</div>
+            <div id="user-display">歡迎參與宣導</div>
             <div class="score-box">得分：<span id="score">0</span> / 100</div>
             <button id="manual-reset-btn" onclick="confirmReset()">🔄 重新開始</button>
         </div>
     </div>
     
     <div id="instruction-bar">
-        🎮 任務：夾取正確答案！(手機版請點擊下方控制鈕，電腦版可使用鍵盤 ⬅️➡️ 移動並按「空白鍵」抓取或下方控制鈕。可能有誤抓或空抓，歡迎多多挑戰手感！）
+        🎮 任務：夾取正確答案！
     </div>
 
     <div class="status-row">
         <button id="shuffle-btn" onclick="shufflePositions()">
             📦 選項夾不到？點我重新排版
         </button>
-        
         <div class="timer-display">
             ⏱️ 剩餘時間：<span id="timer">600</span>s
         </div>
